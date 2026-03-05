@@ -288,12 +288,14 @@ function SidePanel({
   onDeletePerson,
   onRefresh,
   refreshTrigger,
+  isAdmin,
 }: {
   onSelectPerson: (person: Person) => void;
   selectedId: string | null;
   onDeletePerson: (personId: string, e: React.MouseEvent) => void;
   onRefresh?: () => Promise<void>;
   refreshTrigger?: number;
+  isAdmin: boolean;
 }) {
   const [personnes, setPersonnes] = useState<Person[]>([]);
   const [recherche, setRecherche] = useState("");
@@ -411,28 +413,30 @@ function SidePanel({
                       <span style={{ color: "#4a5568", fontSize: 11 }}>{Math.floor((new Date().getTime() - new Date(p.birthdate).getTime()) / (365.25 * 24 * 60 * 60 * 1000))} ans</span>
                   ) : null}
                 </div>
-                <button
-                  onClick={(e) => handleDelete(p._id, e)}
-                  style={{
-                    padding: "4px 8px",
-                    background: "#742a2a",
-                    color: "#feb2b2",
-                    border: "none",
-                    borderRadius: 4,
-                    cursor: "pointer",
-                    fontSize: 12,
-                    whiteSpace: "nowrap",
-                    transition: "all 0.15s ease",
-                  }}
-                  onMouseEnter={(e) => {
-                    (e.currentTarget as HTMLButtonElement).style.background = "#9c3c3c";
-                  }}
-                  onMouseLeave={(e) => {
-                    (e.currentTarget as HTMLButtonElement).style.background = "#742a2a";
-                  }}
-                >
-                  ✕ Supprimer
-                </button>
+                {isAdmin && (
+                  <button
+                    onClick={(e) => handleDelete(p._id, e)}
+                    style={{
+                      padding: "4px 8px",
+                      background: "#742a2a",
+                      color: "#feb2b2",
+                      border: "none",
+                      borderRadius: 4,
+                      cursor: "pointer",
+                      fontSize: 12,
+                      whiteSpace: "nowrap",
+                      transition: "all 0.15s ease",
+                    }}
+                    onMouseEnter={(e) => {
+                      (e.currentTarget as HTMLButtonElement).style.background = "#9c3c3c";
+                    }}
+                    onMouseLeave={(e) => {
+                      (e.currentTarget as HTMLButtonElement).style.background = "#742a2a";
+                    }}
+                  >
+                    ✕ Supprimer
+                  </button>
+                )}
               </div>
             );
           })
@@ -717,6 +721,13 @@ export default function FamilyTreePage() {
 
   async function handleDeletePerson(personId: string, e: React.MouseEvent) {
     e.stopPropagation();
+    
+    // Vérifier que l'utilisateur est admin
+    if (!isAdmin) {
+      alert("Vous n'avez pas les permissions pour supprimer une personne");
+      return;
+    }
+    
     if (!confirm("Êtes-vous sûr de vouloir supprimer cette personne ? Tous les mariages et liens familiaux seront également supprimés.")) {
       return;
     }
@@ -892,6 +903,7 @@ export default function FamilyTreePage() {
           onDeletePerson={handleDeletePerson}
           onRefresh={refreshPersonnes}
           refreshTrigger={sidePanelRefresh}
+          isAdmin={isAdmin}
         />
       </div>
 

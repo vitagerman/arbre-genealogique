@@ -789,44 +789,48 @@ export default function FamilyTreePage() {
 
   // ─── Rendu SVG ────────────────────────────────────────────────────────────
 
-  function renderCenterCircle() {
-    const person = tree["0-0"] ?? null;
-    return (
-      <g key="0-0" data-sector="true" style={{ cursor: isAdmin ? "pointer" : "default" }} onClick={(e) => { if (isAdmin) { e.stopPropagation(); setOpenModal("0-0"); } }}>
-        <circle cx={CX} cy={CY} r={R_CENTER} fill="#2d2d4e" stroke={isAdmin ? "#7c6aff" : "#4a5568"} strokeWidth={2} />
-        <text x={CX} y={CY} textAnchor="middle" dominantBaseline="middle" fontSize={13} fill="#e2e8f0">
-          {person ? `${person.firstName}${person.lastName ? ` ${person.lastName}` : ""}` : (isAdmin ? "+" : "")}
-        </text>
-      </g>
-    );
-  }
+// Dans la fonction renderCenterCircle()
+function renderCenterCircle() {
+  const person = tree["0-0"] ?? null;
+  return (
+    <g key="0-0" data-sector="true" style={{ cursor: isAdmin ? "pointer" : "default" }} onClick={(e) => { if (isAdmin) { e.stopPropagation(); setOpenModal("0-0"); } }}>
+      <circle cx={CX} cy={CY} r={R_CENTER} fill="#2d2d4e" stroke={isAdmin ? "#7c6aff" : "#4a5568"} strokeWidth={2} />
+      <text x={CX} y={CY - 6} textAnchor="middle" dominantBaseline="middle" fontSize={13} fill="#e2e8f0">
+        <tspan x={CX} dy={0}>{person ? person.firstName : (isAdmin ? "+" : "")}</tspan>
+        <tspan x={CX} dy={16}>{person ? (person.lastName ?? "") : ""}</tspan>
+      </text>
+    </g>
+  );
+}
 
-  function renderRings() {
-    const elements: React.ReactNode[] = [];
-    for (let g = 1; g <= generations; g++) {
-      const totalInGen = Math.pow(2, g);
-      const innerR = R_CENTER + (g - 1) * RING_WIDTH;
-      const outerR = R_CENTER + g * RING_WIDTH;
-      for (let i = 0; i < totalInGen; i++) {
-        const sectorId = `${g}-${i}`;
-        const person = tree[sectorId] ?? null;
-        const anglePer = 360 / totalInGen;
-        const startDeg = i * anglePer + GAP_DEG / 2;
-        const endDeg = (i + 1) * anglePer - GAP_DEG / 2;
-        const pathD = describeArc(CX, CY, innerR, outerR, startDeg, endDeg);
-        const labelP = getLabelPos(CX, CY, innerR, outerR, startDeg, endDeg);
-        elements.push(
-          <g key={sectorId} data-sector="true" style={{ cursor: isAdmin ? "pointer" : "default" }} onClick={(e) => { if (isAdmin) { e.stopPropagation(); setOpenModal(sectorId); } }}>
-            <path d={pathD} fill={person ? "#16213e" : "#0d0d1a"} stroke="#2d2d4e" strokeWidth={1.5} opacity={isAdmin ? 1 : 0.6} />
-            <text x={labelP.x} y={labelP.y} textAnchor="middle" dominantBaseline="middle" fontSize={11} fill={person ? "#e2e8f0" : "#4a5568"} style={{ pointerEvents: "none", userSelect: "none" }}>
-              {person ? `${person.firstName}${person.lastName ? ` ${person.lastName}` : ""}` : (isAdmin ? "+" : "")}
-            </text>
-          </g>
-        );
-      }
+// Dans la fonction renderRings()
+function renderRings() {
+  const elements: React.ReactNode[] = [];
+  for (let g = 1; g <= generations; g++) {
+    const totalInGen = Math.pow(2, g);
+    const innerR = R_CENTER + (g - 1) * RING_WIDTH;
+    const outerR = R_CENTER + g * RING_WIDTH;
+    for (let i = 0; i < totalInGen; i++) {
+      const sectorId = `${g}-${i}`;
+      const person = tree[sectorId] ?? null;
+      const anglePer = 360 / totalInGen;
+      const startDeg = i * anglePer + GAP_DEG / 2;
+      const endDeg = (i + 1) * anglePer - GAP_DEG / 2;
+      const pathD = describeArc(CX, CY, innerR, outerR, startDeg, endDeg);
+      const labelP = getLabelPos(CX, CY, innerR, outerR, startDeg, endDeg);
+      elements.push(
+        <g key={sectorId} data-sector="true" style={{ cursor: isAdmin ? "pointer" : "default" }} onClick={(e) => { if (isAdmin) { e.stopPropagation(); setOpenModal(sectorId); } }}>
+          <path d={pathD} fill={person ? "#16213e" : "#0d0d1a"} stroke="#2d2d4e" strokeWidth={1.5} opacity={isAdmin ? 1 : 0.6} />
+          <text x={labelP.x} y={labelP.y - 6} textAnchor="middle" dominantBaseline="middle" fontSize={11} fill={person ? "#e2e8f0" : "#4a5568"} style={{ pointerEvents: "none", userSelect: "none" }}>
+            <tspan x={labelP.x} dy={0}>{person ? person.firstName : (isAdmin ? "+" : "")}</tspan>
+            <tspan x={labelP.x} dy={13}>{person ? (person.lastName ?? "") : ""}</tspan>
+          </text>
+        </g>
+      );
     }
-    return elements;
   }
+  return elements;
+}
 
   const svgSize = (R_CENTER + Math.max(generations, 1) * RING_WIDTH + 20) * 2;
 
